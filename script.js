@@ -85,7 +85,13 @@ function parseCSVLine(line) {
 
 function displayPublications(publications) {
     const list = document.getElementById('publications-list');
-    list.innerHTML = '<ul>' + publications.map(pub => 
-        `<li><strong>${pub.Title}</strong> by ${pub.Authors} (${pub.Year}) - ${pub.Journal}<br><p class="publication-description">${pub.Description}</p></li>`
-    ).join('') + '</ul>';
+    list.innerHTML = '<ul>' + publications.map(pub => {
+        let pdfLink = '';
+        if (pub.Title.includes('Distributed ML Property Attestation')) {
+            pdfLink = '<br><a href="Distributed_ML_Property_Attestation_using_TEEs-2.pdf" target="_blank" class="pdf-link">View PDF</a>';
+        } else if (pub.Title.includes('A Study on Machine Learning-Based Network Intrusion Detection System')) {
+            pdfLink = '<br><a href="A_Study_on_Machine_Learning_Based_Network_Intrusion_Detection_System.pdf" target="_blank" class="pdf-link">View PDF</a>';
+        }
+        return `<li><strong>${pub.Title}</strong> by ${pub.Authors} (${pub.Year}) - ${pub.Journal}${pdfLink}<br><p class="publication-description">${pub.Description}</p></li>`;
+    }).join('') + '</ul>';
 }
