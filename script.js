@@ -1,4 +1,4 @@
-// Function to get cookie value
+// Functions for cookie handling
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -6,16 +6,11 @@ function getCookie(name) {
     return null;
 }
 
-// Function to set cookie
 function setCookie(name, value, days = 365) {
     const date = new Date();
     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
 }
-
-// Apply saved theme immediately to avoid flash
-const savedTheme = getCookie('theme') || 'light';
-document.body.classList.toggle('dark-mode', savedTheme === 'dark');
 
 // Placeholder for JavaScript functionality
 // Later, this can be used to load data from CSV files
@@ -29,11 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dark mode toggle
     const toggleButton = document.getElementById('dark-mode-toggle');
     if (toggleButton) {
-        toggleButton.textContent = savedTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        const currentTheme = document.documentElement.classList.contains('dark-mode') ? 'dark' : 'light';
+        toggleButton.textContent = currentTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
 
         toggleButton.addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            document.documentElement.classList.toggle('dark-mode');
+            const theme = document.documentElement.classList.contains('dark-mode') ? 'dark' : 'light';
             setCookie('theme', theme);
             toggleButton.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
         });
@@ -52,20 +48,44 @@ function loadPublications() {
 
 function parseCSV(csvText) {
     const lines = csvText.trim().split('\n');
-    const headers = lines[0].split(',');
+    const headers = parseCSVLine(lines[0]);
     const rows = lines.slice(1).map(line => {
-        const values = line.split(',');
+        const values = parseCSVLine(line);
         return headers.reduce((obj, header, index) => {
-            obj[header.trim()] = values[index].trim();
+            obj[header] = values[index] || '';
             return obj;
         }, {});
     });
     return rows;
 }
 
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i++; // skip next
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current.trim());
+    return result;
+}
+
 function displayPublications(publications) {
     const list = document.getElementById('publications-list');
     list.innerHTML = '<ul>' + publications.map(pub => 
-        `<li><strong>${pub.Title}</strong> by ${pub.Authors} (${pub.Year}) - ${pub.Journal}</li>`
+        `<li><strong>${pub.Title}</strong> by ${pub.Authors} (${pub.Year}) - ${pub.Journal}<br><p class="publication-description">${pub.Description}</p></li>`
     ).join('') + '</ul>';
 }

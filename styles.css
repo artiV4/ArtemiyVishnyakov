@@ -122,3 +122,20 @@ footer {
     padding: 1rem;
     box-shadow: 0 -2px 4px var(--shadow);
 }
+
+footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    margin: 0 0.5rem;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+.publication-description {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.4;
+}
